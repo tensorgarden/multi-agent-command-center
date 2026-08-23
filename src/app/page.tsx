@@ -290,7 +290,7 @@ export default function Home() {
               <p className={`mt-2 text-xs font-semibold ${review.sourceKind === "untrusted_content" ? "text-amber-700" : "text-slate-600"}`}>
                 Source: {review.sourceKind.replace(/_/g, " ")}
               </p>
-              <p className={`mt-2 text-xs font-semibold ${(review.entryVector === "session_summary" || review.entryVector === "retrieval_result") ? "text-amber-700" : "text-slate-600"}`}>
+              <p className={`mt-2 text-xs font-semibold ${(review.entryVector === "session_summary" || review.entryVector === "retrieval_result" || review.entryVector === "query_only_interaction") ? "text-amber-700" : "text-slate-600"}`}>
                 Entry vector: {review.entryVector.replace(/_/g, " ")}
                 {review.corroboratingSourceIds.length > 0
                   ? ` · corroborated by: ${review.corroboratingSourceIds.join(", ")}`

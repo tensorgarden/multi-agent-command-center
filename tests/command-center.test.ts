@@ -374,10 +374,31 @@ describe("persistent memory gate", () => {
     }
   });
 
+  it("blocks query-only memory injection into a shared workspace", () => {
+    const queryOnlyWrites = demoMemoryWriteReviews.filter(
+      review => review.policyId === "POL-MEMORY-QUERY-025"
+    );
+
+    expect(queryOnlyWrites).toHaveLength(1);
+    for (const review of queryOnlyWrites) {
+      expect(review.entryVector).toBe("query_only_interaction");
+      expect(review.sourceKind).toBe("untrusted_content");
+      expect(review.crossSession).toBe(true);
+      expect(review.protectedKey).toBe(true);
+      expect(review.corroboratingSourceIds).toHaveLength(0);
+      expect(review.requestedTrustLayer).toBe("system_prompt");
+      expect(review.appliedTrustLayer).toBe("not_persisted");
+      expect(review.propagationState).toBe("not_propagated");
+      expect(review.decision).toBe("blocked");
+      expect(review.decisionReason.toLowerCase()).toContain("shared memory");
+      expect(review.decisionReason.toLowerCase()).toContain("query-only");
+    }
+  });
+
   it("records an entry vector for every memory write review", () => {
     expect(demoMemoryWriteReviews.length).toBeGreaterThan(0);
     for (const review of demoMemoryWriteReviews) {
-      expect(["direct_write", "session_summary", "retrieval_result"]).toContain(review.entryVector);
+      expect(["direct_write", "session_summary", "retrieval_result", "query_only_interaction"]).toContain(review.entryVector);
     }
   });
 });

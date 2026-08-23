@@ -388,6 +388,28 @@ export const demoMemoryWriteReviews: MemoryWriteReview[] = [
     decision: "blocked",
     policyId: "POL-MEMORY-RETRIEVAL-024",
     decisionReason: "Blocked because a shared-index retrieval returned a poisoned FAQ chunk seeded inside an uploaded onboarding document instructing agents to lower the transaction-hold threshold and promote the change into the global-hooks control plane; retrieved chunks are untrusted input and a retrieval hit cannot corroborate its own cross-session write, preventing retrieval-poisoned memory propagation"
+  },
+  {
+    id: "memwr_006",
+    agentId: "ag_kyc_doc",
+    agentName: "DocReview-v2",
+    requestedKey: "workspace.tool_policies.external_export",
+    memoryScope: "workspace",
+    sourceKind: "untrusted_content",
+    entryVector: "query_only_interaction",
+    corroboratingSourceIds: [],
+    crossSession: true,
+    protectedKey: true,
+    sensitiveDataDetected: false,
+    integrityStatus: "baseline_mismatch",
+    requestedTrustLayer: "system_prompt",
+    appliedTrustLayer: "not_persisted",
+    propagationState: "not_propagated",
+    recipientAgentIds: [],
+    ttlHours: null,
+    decision: "blocked",
+    policyId: "POL-MEMORY-QUERY-025",
+    decisionReason: "Blocked because an ordinary user query seeded a malicious experience into the shared memory bank for later retrieval by other users, without an independent source of record, preventing query-only memory injection from reaching the system-prompt control plane"
   }
 ];
 
