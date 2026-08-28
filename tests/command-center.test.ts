@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { demoAgents, demoDriftAlerts, demoCostSummary, demoArtifacts, demoAuditLog, demoEgressGateReviews, demoMemoryWriteReviews, demoToolGrantReviews } from "@/lib/demo-data";
+import { demoAgents, demoDriftAlerts, demoCostSummary, demoArtifacts, demoAuditLog, demoEgressGateReviews, demoMemoryWriteReviews, demoToolGrantReviews, isEgressDispatchAllowed } from "@/lib/demo-data";
 
 describe("agent observability", () => {
   it("has 10 agent workers", () => {
@@ -197,6 +197,34 @@ describe("egress gate", () => {
       expect(review.decisionReason.toLowerCase()).toContain("confused-deputy");
       expect(review.decisionReason.toLowerCase()).toContain("data exfiltration");
     }
+  });
+
+  it("uses the egress gate as a dispatch predicate, not presentation metadata", () => {
+    const allowedInternal = demoEgressGateReviews.find(review => review.decision === "allowed");
+
+    expect(allowedInternal).toBeDefined();
+    if (!allowedInternal) {
+      throw new Error("Expected an allowed internal egress fixture");
+    }
+
+    expect(isEgressDispatchAllowed(allowedInternal)).toBe(true);
+    expect(
+      demoEgressGateReviews
+        .filter(review => review.decision !== "allowed")
+        .every(review => !isEgressDispatchAllowed(review))
+    ).toBe(true);
+
+    expect(
+      isEgressDispatchAllowed({
+        ...allowedInternal,
+        target: "https://incident-assets.example.io/pixel.png?telemetry=private",
+        sourceKind: "untrusted_content",
+        contextAdmission: "quarantined",
+        taintedFields: ["external_image_url", "url_query_parameter", "account_telemetry"],
+        riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
+        authorizationState: "out_of_scope"
+      })
+    ).toBe(false);
   });
 
   it("keeps delegated egress requests attributable to known agent workers", () => {

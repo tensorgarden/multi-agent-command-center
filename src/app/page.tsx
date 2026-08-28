@@ -5,6 +5,7 @@ import {
   demoCostSummary,
   demoDriftAlerts,
   demoEgressGateReviews,
+  isEgressDispatchAllowed,
   demoMemoryWriteReviews,
   demoMembers,
   demoToolGrantReviews,
@@ -256,6 +257,9 @@ export default function Home() {
               )}
               <p className={`mt-1 text-xs font-semibold ${review.authorizationState === "out_of_scope" ? "text-red-700" : "text-slate-600"}`}>
                 Authorization: {review.authorizationState.replace(/_/g, " ")}
+              </p>
+              <p className={`mt-1 text-xs font-semibold ${isEgressDispatchAllowed(review) ? "text-emerald-700" : "text-red-700"}`}>
+                Execution: {isEgressDispatchAllowed(review) ? "released" : "held by egress gate"}
               </p>
             </div>
           ))}

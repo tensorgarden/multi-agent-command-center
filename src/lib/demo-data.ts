@@ -1,5 +1,18 @@
 import type { AgentWorker, AuditEntry, CostSummary, DriftAlert, EgressGateReview, MemoryWriteReview, Project, RunArtifact, ToolGrantReview, Workspace, WorkspaceMember } from "./types";
 
+export function isEgressDispatchAllowed(review: EgressGateReview): boolean {
+  return (
+    review.decision === "allowed" &&
+    review.authorizationState === "in_scope" &&
+    review.contextAdmission === "admitted" &&
+    review.sourceKind === "trusted_system" &&
+    review.target.startsWith("internal://") &&
+    review.taintedFields.length === 0 &&
+    review.riskFactors.length === 0 &&
+    review.delegationVerification !== "unverified"
+  );
+}
+
 export const demoWorkspace: Workspace = {
   id: "ws_fintech",
   name: "Fintech Compliance Operations",
