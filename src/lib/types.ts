@@ -7,6 +7,7 @@ export type TaintSource = "trusted_system" | "untrusted_content" | "operator_ins
 export type EgressRiskFactor = "private_data_access" | "untrusted_content" | "external_communication";
 export type EgressAuthorizationState = "in_scope" | "human_review_required" | "out_of_scope";
 export type DelegationVerification = "not_applicable" | "verified" | "unverified";
+export type EgressTraceStatus = "local" | "cross_agent_verified" | "cross_agent_tainted";
 export type ContextAdmission = "admitted" | "human_review_required" | "quarantined";
 export type MemoryScope = "session" | "user" | "workspace";
 export type MemoryEntryVector = "direct_write" | "session_summary" | "retrieval_result" | "query_only_interaction";
@@ -104,6 +105,9 @@ export interface EgressGateReview {
   contextAdmission: ContextAdmission;
   delegatedByAgentId: string | null;
   delegationVerification: DelegationVerification;
+  workflowId: string;
+  upstreamReviewIds: string[];
+  traceStatus: EgressTraceStatus;
   taintedFields: string[];
   riskFactors: EgressRiskFactor[];
   authorizationState: EgressAuthorizationState;

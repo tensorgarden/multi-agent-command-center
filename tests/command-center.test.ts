@@ -227,6 +227,34 @@ describe("egress gate", () => {
     ).toBe(false);
   });
 
+  it("preserves cross-agent provenance through the final egress sink", () => {
+    const workflow = demoEgressGateReviews.filter(
+      review => review.workflowId === "wf_cross_agent_egress_001"
+    );
+    const reviewIds = new Set(demoEgressGateReviews.map(review => review.id));
+
+    expect(workflow).toHaveLength(2);
+    for (const review of workflow) {
+      expect(review.traceStatus).toBe("cross_agent_tainted");
+      expect(review.upstreamReviewIds).not.toContain(review.id);
+      expect(review.upstreamReviewIds.every(reviewId => reviewIds.has(reviewId))).toBe(true);
+      expect(review.decision).toBe("blocked");
+      expect(isEgressDispatchAllowed(review)).toBe(false);
+    }
+
+    const finalSink = workflow.find(review => review.id === "eg_008");
+    expect(finalSink).toBeDefined();
+    if (!finalSink) {
+      throw new Error("Expected the cross-agent workflow to end at eg_008");
+    }
+
+    expect(finalSink.upstreamReviewIds).toEqual(["eg_007"]);
+    expect(finalSink.delegationVerification).toBe("verified");
+    expect(finalSink.target).not.toMatch(/^internal:\/\//);
+    expect(finalSink.decisionReason.toLowerCase()).toContain("multi-agent");
+    expect(finalSink.decisionReason.toLowerCase()).toContain("data exfiltration");
+  });
+
   it("keeps delegated egress requests attributable to known agent workers", () => {
     const agentIds = new Set(demoAgents.map(agent => agent.id));
 

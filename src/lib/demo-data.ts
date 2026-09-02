@@ -9,6 +9,7 @@ export function isEgressDispatchAllowed(review: EgressGateReview): boolean {
     review.target.startsWith("internal://") &&
     review.taintedFields.length === 0 &&
     review.riskFactors.length === 0 &&
+    review.traceStatus !== "cross_agent_tainted" &&
     review.delegationVerification !== "unverified"
   );
 }
@@ -180,6 +181,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "quarantined",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_fraud_case_2847",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: ["webhook_url", "beneficiary_name"],
     riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
     authorizationState: "out_of_scope",
@@ -197,6 +201,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "human_review_required",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_regulatory_filing_001",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: ["narrative_body"],
     riskFactors: ["private_data_access", "external_communication"],
     authorizationState: "human_review_required",
@@ -214,6 +221,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "admitted",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_audit_hash_001",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: [],
     riskFactors: [],
     authorizationState: "in_scope",
@@ -231,6 +241,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "quarantined",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_kyc_upload_001",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: ["uploaded_pdf_instructions", "external_upload_url", "kyc_evidence_packet"],
     riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
     authorizationState: "out_of_scope",
@@ -248,6 +261,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "quarantined",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_sanctions_export_001",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: ["api_response_webhook_url", "sanctions_screening_results", "customer_risk_scores"],
     riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
     authorizationState: "out_of_scope",
@@ -265,6 +281,9 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "quarantined",
     delegatedByAgentId: null,
     delegationVerification: "not_applicable",
+    workflowId: "wf_incident_render_001",
+    upstreamReviewIds: [],
+    traceStatus: "local",
     taintedFields: ["external_image_url", "url_query_parameter", "account_telemetry"],
     riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
     authorizationState: "out_of_scope",
@@ -282,12 +301,35 @@ export const demoEgressGateReviews: EgressGateReview[] = [
     contextAdmission: "quarantined",
     delegatedByAgentId: "ag_fraud_explain",
     delegationVerification: "unverified",
+    workflowId: "wf_cross_agent_egress_001",
+    upstreamReviewIds: [],
+    traceStatus: "cross_agent_tainted",
     taintedFields: ["inter_agent_message", "delegated_target", "kyc_evidence_packet"],
     riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
     authorizationState: "out_of_scope",
     decision: "blocked",
     policyId: "POL-EGRESS-DELEGATION-015",
     decisionReason: "Blocked because an unverified inter-agent delegation asked a higher-privilege data collector to export customer KYC evidence, preventing a confused-deputy path and data exfiltration"
+  },
+  {
+    id: "eg_008",
+    agentId: "ag_reg_draft",
+    agentName: "RegDraft-v1",
+    requestedAction: "Send a privileged KYC summary after a delegated notification chain",
+    target: "https://notification-relay.example.com/send",
+    sourceKind: "untrusted_content",
+    contextAdmission: "quarantined",
+    delegatedByAgentId: "ag_onb_collect",
+    delegationVerification: "verified",
+    workflowId: "wf_cross_agent_egress_001",
+    upstreamReviewIds: ["eg_007"],
+    traceStatus: "cross_agent_tainted",
+    taintedFields: ["delegated_summary", "recipient_address", "kyc_evidence_packet"],
+    riskFactors: ["private_data_access", "untrusted_content", "external_communication"],
+    authorizationState: "out_of_scope",
+    decision: "blocked",
+    policyId: "POL-EGRESS-CROSS-026",
+    decisionReason: "Blocked because a cross-agent workflow carried tainted onboarding instructions into a downstream notification send; verified delegation did not clear the untrusted source or authorize private KYC data to leave the workspace, preventing multi-agent data exfiltration"
   }
 ];
 

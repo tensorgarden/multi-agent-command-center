@@ -261,6 +261,12 @@ export default function Home() {
               <p className={`mt-1 text-xs font-semibold ${isEgressDispatchAllowed(review) ? "text-emerald-700" : "text-red-700"}`}>
                 Execution: {isEgressDispatchAllowed(review) ? "released" : "held by egress gate"}
               </p>
+              <p className="mt-1 text-xs font-semibold text-indigo-700">
+                Workflow trace: {review.traceStatus} · {review.workflowId}
+              </p>
+              {review.upstreamReviewIds.length > 0 && (
+                <p className="mt-1 text-xs text-red-600">Upstream gate reviews: {review.upstreamReviewIds.join(", ")}</p>
+              )}
             </div>
           ))}
         </div>
