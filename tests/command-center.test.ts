@@ -183,6 +183,21 @@ describe("egress gate", () => {
     }
   });
 
+  it("treats output rendering as an explicit egress channel", () => {
+    const renderingReviews = demoEgressGateReviews.filter(
+      review => review.egressChannel === "external_render"
+    );
+
+    expect(renderingReviews).toHaveLength(1);
+    for (const review of renderingReviews) {
+      expect(review.sourceKind).toBe("untrusted_content");
+      expect(review.target).not.toMatch(/^internal:\/\//);
+      expect(review.taintedFields).toEqual(expect.arrayContaining(["external_image_url", "url_query_parameter"]));
+      expect(review.decision).toBe("blocked");
+      expect(review.authorizationState).toBe("out_of_scope");
+    }
+  });
+
   it("blocks unverified inter-agent delegation before a higher-privilege agent acts", () => {
     const unverifiedDelegations = demoEgressGateReviews.filter(
       review => review.delegationVerification === "unverified"

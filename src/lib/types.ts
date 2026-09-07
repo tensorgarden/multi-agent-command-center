@@ -5,6 +5,7 @@ export type AuditCategory = "system" | "data_access" | "risk_decision" | "compli
 export type PermissionDecision = "allowed" | "review_required" | "blocked";
 export type TaintSource = "trusted_system" | "untrusted_content" | "operator_instruction";
 export type EgressRiskFactor = "private_data_access" | "untrusted_content" | "external_communication";
+export type EgressChannel = "internal_ledger" | "external_webhook" | "regulatory_portal" | "external_upload" | "api_export" | "external_render" | "delegated_notification";
 export type EgressAuthorizationState = "in_scope" | "human_review_required" | "out_of_scope";
 export type DelegationVerification = "not_applicable" | "verified" | "unverified";
 export type EgressTraceStatus = "local" | "cross_agent_verified" | "cross_agent_tainted";
@@ -101,6 +102,7 @@ export interface EgressGateReview {
   agentName: string;
   requestedAction: string;
   target: string;
+  egressChannel: EgressChannel;
   sourceKind: TaintSource;
   contextAdmission: ContextAdmission;
   delegatedByAgentId: string | null;

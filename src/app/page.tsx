@@ -240,6 +240,7 @@ export default function Home() {
               </div>
               <p className="mt-2 text-sm leading-5 text-slate-700">{review.requestedAction}</p>
               <p className="mt-2 break-all text-xs text-slate-500">Target: {review.target}</p>
+              <p className="mt-1 text-xs font-semibold text-slate-600">Channel: {review.egressChannel.replace(/_/g, " ")}</p>
               {review.delegatedByAgentId && (
                 <p className="mt-2 text-xs font-semibold text-red-700">
                   Delegated by: {review.delegatedByAgentId} · {review.delegationVerification.replace(/_/g, " ")}
