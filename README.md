@@ -2,7 +2,7 @@
 
 A real-time operations dashboard for teams running multiple AI agents simultaneously. Track what every agent is doing. Catch drift before outputs diverge. Detect cost loops and auto-halt runaway agents. Review agent outputs before they reach production. All from a single command center.
 
-This project is a portfolio demonstration of agent infrastructure patterns: observability, drift detection, cost tracking, trust-tiered permissions, loop detection with auto-halt, and human-in-the-loop artifact review.
+This project is a portfolio demonstration of agent infrastructure patterns: observability, drift detection, cost tracking, trust-tiered permissions, loop detection with auto-halt, human-in-the-loop artifact review, and pre-action security gates.
 
 ## Who this is for
 
@@ -23,6 +23,16 @@ This project addresses that fracture directly. Instead of raw agent traces, it s
 - **What it costs**: per-agent and per-project cost tracking with budget thresholds, because multi-agent costs grow non-linearly
 - **When an agent is looping**: automatic detection when an agent revisits the same state 3+ times, with auto-halt
 - **What needs human judgment**: a review queue organized by trust tier, not all-or-nothing permission flags
+
+### Security boundary
+
+OWASP's 2026 agent-security guidance identifies a practical failure mode: retrieved documents, API responses, and tool outputs can carry indirect prompt injections into the same context the agent uses for privileged actions. The risk becomes material when one worker can access private data and communicate externally. This dashboard treats those channels as security boundaries rather than trusted plumbing:
+
+- **Egress reviews** track source trust, tainted fields, destination, channel, authorization scope, and cross-agent provenance before dispatch.
+- **Persistent-memory reviews** keep poisoned retrieval results, summaries, and query-only content out of system prompts and global hooks.
+- **Tool-grant reviews** compare approved and observed manifests and block hidden instructions or post-approval substitutions.
+
+Source: [OWASP Top 10 for Agentic Applications for 2026](https://genai.owasp.org/resource/owasp-top-10-for-agentic-applications-for-2026/).
 
 The demo models a fintech compliance workspace with 10 agent workers across 4 projects: KYC document review, transaction fraud detection, regulatory report generation, and client onboarding.
 
@@ -48,6 +58,9 @@ The demo models a fintech compliance workspace with 10 agent workers across 4 pr
 - **Drift detection**: Two agents disagreeing on the same assumption (e.g., different risk threshold values) are flagged side-by-side with severity scoring
 - **Loop detection with auto-halt**: When an agent revisits the same state 3+ times, it is automatically halted. The dashboard shows a red alert and the state trail
 - **Three-tier trust model**: Per-agent configuration: auto-approve, review-required, or deny. No all-or-nothing permission fatigue
+- **Egress gate**: External destinations and payload fields derived from untrusted content are tainted, traced across delegated workflows, and blocked before dispatch
+- **Persistent memory gate**: Cross-session writes require verified sources, bounded retention, and explicit separation from trusted instruction layers
+- **Tool grant review**: Hash-pinned manifests and description scans catch rug pulls, hidden instructions, and tool-poisoning paths before execution
 - **Run artifact review**: Agent outputs requiring human approval are queued with accept/change/reject actions. Loop-tainted artifacts are flagged
 - **Cost tracking**: Per-agent and per-project cost breakdown with monthly budget gauge. Budget alert fires at 80%
 - **Audit log**: Every agent action recorded with cost, timestamp, and detail. Filterable by agent, project, or action type
@@ -60,7 +73,7 @@ The demo models a fintech compliance workspace with 10 agent workers across 4 pr
 | Framework | Next.js App Router |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
-| Testing | Vitest: 8 tests covering agent observability, drift detection, cost tracking, and artifact review |
+| Testing | Vitest: 45 tests covering observability, drift, cost, egress, memory, tool grants, and artifact review |
 | CI | GitHub Actions |
 | Data | TypeScript fixture data, no database required for demo |
 
@@ -68,7 +81,7 @@ The demo models a fintech compliance workspace with 10 agent workers across 4 pr
 
 ```
 src/app/page.tsx              ← Dashboard: observability grid, drift panel, cost tracker, review queue, audit log
-  → src/lib/demo-data.ts      ← Fixture data: 10 agents, 4 projects, 2 drift alerts, 3 artifacts, 8 audit entries
+  → src/lib/demo-data.ts      ← Fixture data: 10 agents, 4 projects, 2 drift alerts, 3 artifacts, 8 audit entries, 8 egress reviews, 6 memory reviews, 4 tool reviews
   → src/lib/types.ts          ← TypeScript interfaces for all domain objects
 ```
 
@@ -92,7 +105,7 @@ Open `http://localhost:3000`.
 ```bash
 npm run lint        # ESLint with zero warnings
 npm run typecheck   # TypeScript strict mode
-npm test            # Vitest. 8 tests, 1 suite
+npm test            # Vitest. 45 tests, 1 suite
 npm run build       # Production build
 ```
 
@@ -107,6 +120,9 @@ All data is fictional and public-safe. The demo models a fintech compliance work
 - 2 drift alerts (one medium, one high severity)
 - 3 run artifacts awaiting review (including one loop-tainted)
 - 8 audit log entries with cost tracking
+- 8 egress reviews covering document, API, rendering, and delegated-communication paths
+- 6 persistent-memory reviews covering verified writes and poisoned direct, summary, retrieval, and query-only vectors
+- 4 tool-grant reviews covering approved, rug-pulled, hidden-instruction, and re-signed manifests
 - 4 workspace members (admin, operators, viewer)
 
 ## Screenshot refresh
